@@ -5,13 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "588542438",
+    "hash" : "0",
     "id" : "FDB2043E",
     "lastKnownWriteTime" : 1593736304,
     "last_content_update" : 1593736304,
     "path" : "C:/Users/user/IT학습/빅데이터분석 교육자료/R기초사용법 실습자료/R_프로그래밍_기초_R.r",
     "project_path" : "R_프로그래밍_기초_R.r",
     "properties" : {
+        "cursorPosition" : "11,20",
+        "scrollLine" : "4"
     },
     "read_only" : false,
     "read_only_alternatives" : [
