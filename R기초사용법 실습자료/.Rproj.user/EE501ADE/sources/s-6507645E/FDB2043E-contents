@@ -165,32 +165,32 @@ DT <- data.frame( a=sample(1:1000, n, replace=TRUE),
                   f=sample(1:1000, n, replace=TRUE) )
 
 # txt 파일로 저장하기 예시  1 
-write.table(DT, 'E:\\09. Rproject\\DATA\\test.txt', sep=',', row.names=FALSE, quote=FALSE)
+write.table(DT, 'C:\\Temp\\테스트\\test.txt', sep=',', row.names=FALSE, quote=FALSE)
                            
 # CSV 파일로 저장하기 예시  2
-write.csv(DT, 'E:\\09. Rproject\\DATA\\test.csv', row.names=FALSE, quote=FALSE)
+write.csv(DT, 'C:\\Temp\\테스트\\test.csv', row.names=FALSE, quote=FALSE)
 
 #============================================================
 # 외부 데이터 불러오기
 #============================================================
 
 # read.csv()로 CSV 파일 가져오기 예시 1 
-DF1 <-read.csv('E:\\09. Rproject\\DATA\\test.csv', stringsAsFactors=FALSE)
+DF1 <-read.csv('C:\\Temp\\테스트\\test.csv', stringsAsFactors=FALSE)
 
 # read.table()로 txt 파일 가져오기 예시 2
-DF2 <- read.table('E:\\09. Rproject\\DATA\\test.txt', header=TRUE, sep=',', quote='',
+DF2 <- read.table('C:\\Temp\\테스트\\test.txt', header=TRUE, sep=',', quote='',
                             stringsAsFactors=FALSE, comment.char='', nrows=n,
                             colClasses=c('integer', 'integer', 'numeric', 'character', 'numeric', 'integer'))
                             
 # fread()로 CSV 파일 가져오기 예시 3 : data.table::fread()로 csv file import.
 install.packages("data.table")
 library(data.table)
-DT1 <- fread('E:\\09. Rproject\\DATA\\test.csv')
+DT1 <- fread('C:\\Temp\\테스트\\test.csv')
 
 # read.csv.sql()로 CSV 파일 가져오기 예시 4 : sqldf::read.csv.sql()로 csv file import
 install.packages("sqldf")
 library(sqldf)
-SQLDF <- read.csv.sql('E:\\09. Rproject\\DATA\\test.csv', dbname=NULL)
+SQLDF <- read.csv.sql('C:\\Temp\\test.csv', dbname=NULL)
 
 
 # *************************
