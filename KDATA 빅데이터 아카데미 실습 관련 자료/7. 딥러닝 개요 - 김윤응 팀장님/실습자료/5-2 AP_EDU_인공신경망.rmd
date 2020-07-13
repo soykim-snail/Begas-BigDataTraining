@@ -1,0 +1,141 @@
+---
+title: "▒ 인공신경망 ▒"
+output: 
+  html_document:
+    df_print : paged
+    fig_height: 6
+    fig_width: 10
+    highlight: textmate
+    theme: journal
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<br /> 
+
+### **0. 환경설정**
+<br />
+
+```{r set env, echo = TRUE, message = FALSE}
+#install.packages("neuralnet")
+library(neuralnet)
+library(MASS)
+# options(repr.plot.width = 5, repr.plot.height = 4) #그림 크기 옵션
+```
+<br /> 
+<br /> 
+
+### **1. 이산형 Case 데이터**
+<br />
+
+**[데이터 호출]** Binary Case Data
+```{r data import}
+data(infert)
+X                     <- infert[,c("age","parity","induced","spontaneous")]
+y                     <- infert[,"case"]
+df                    <- data.frame(scale(X),y) # 신경망모형 적합전 scaling이 필요하다.
+head(df)
+```
+<br /> 
+
+**[모형 적합]** fit neural net
+```{r fit nn}
+nn1                   <- neuralnet(y ~ age+parity+induced+spontaneous, data=df,
+                                   hidden=2,              # 단일 은닉층에 2개의 뉴런
+                                   err.fct="ce",
+                                   linear.output=F)       # 출력노드에서 선형 활성화 비적용
+# threshold는 편미분 변화량에 적용되는 파라미터이다.
+print(nn1)
+```
+<br />
+
+**[시각화]** 적합 결과 그림 <br /> 
+※ R markdownd의 neural net plot은 rep옵션 지정이 필요함
+```{r plot nn 1, fig.width = 8, fig.height = 6}
+plot(nn1, rep = "best")
+```
+<br /> 
+<br /> 
+
+**[예측]**
+```{r}
+pre                   <- compute(nn1, scale(X))$net.result #모형 예측값
+pre                   <- ifelse(pre<=0.5,0,1)
+table(pre,y)
+mean((pre!=y))
+```
+<br /> 
+<br /> 
+
+### **2. 연속형 Case Data**
+<br />
+
+**[데이터 호출 및 분할]** 데이터 불러온 후 train / test 분할
+```{r data import 2}
+data(Boston)
+data                  <- Boston
+head(data)
+index                 <- sample(1:nrow(data),round(0.75*nrow(data)))
+train                 <- data[index,]
+test                  <- data[-index,]
+maxs                  <- apply(train, 2, max)
+mins                  <- apply(train, 2, min)
+train_                <- as.data.frame(scale(train, center=mins,scale= maxs-mins))
+test_                 <- as.data.frame(scale(test, center=mins, scale= maxs-mins))
+```
+<br /> 
+
+**[모형 적합]** 은닉층이 1층일 경우
+<br /> 
+```{r hidden 1- 1}
+n                     <- names(train_)
+f                     <- as.formula(paste("medv ~", paste(n[!n %in% "medv"],collapse = " + ")))
+f      #neuralnet에는 y~.이 안됨
+nn2                   <- neuralnet(f , data=train_, hidden=3,linear.output=T)
+print(nn2)
+```
+<br /> 
+
+**[예측 및 시각화]** 은닉층이 1층일 경우
+```{r hidden 1- 1 plot}
+pr.nn                 <- compute(nn2, test_[, 1:13])
+pr.nn_                <- pr.nn$net.result * (max(train$medv)-min(train$medv)) +
+                         min(train$medv)
+test.r                <- (test_$medv) * (max(train$medv)-min(train$medv)) +
+                         min(train$medv)
+MSE.nn                <- sum((test.r - pr.nn_)^2)/nrow(test_)
+round(MSE.nn,1)
+plot(nn2 , rep = "best")
+```
+<br /> 
+<br /> 
+
+
+**[모형 적합]** 은닉층이 2층일 경우
+```{r hidden 1- 2}
+n                     <- names(train_)
+f                     <- as.formula(paste("medv ~", paste(n[!n %in% "medv"],
+                                                          collapse = " + ")))
+f 
+#hidden layer를 2층으로, 노드를 4개,2개로 구성
+nn3                   <- neuralnet(f , data=train_, hidden=c(4,2),linear.output=T)   
+print(nn3)
+```
+<br /> 
+
+**[예측 및 시각화]** 은닉층이 2층일 경우
+```{r hidden 1- 2 plot}
+pr.nn                 <- compute(nn3, test_[, 1:13])
+pr.nn_                <- pr.nn$net.result * (max(train$medv)-min(train$medv)) +
+                         min(train$medv)
+test.r                <- (test_$medv) * (max(train$medv)-min(train$medv)) + 
+                         min(train$medv)
+MSE.nn                <- sum((test.r - pr.nn_)^2)/nrow(test_)
+round(MSE.nn,1)
+plot(nn3 , rep = "best")
+```
+<br /> 

@@ -1,0 +1,252 @@
+---
+title: "▒ 군집분석 ▒"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<br /> 
+
+### **0. 환경설정**
+<br />
+
+```{r set env, echo = TRUE, message = FALSE}
+# install.packages("kohonen")
+# install.packages("dbscan")
+library(kohonen)
+library(dbscan)
+library(readxl)
+library(tidyverse)
+options(repr.plot.width = 5, repr.plot.height = 4) #그림 크기 옵션
+```
+<br /> 
+<br /> 
+
+### **1. 데이터 불러오기**
+<br />
+
+**[데이터 다운로드]** <br />
+
+* C드라이브에 [R_project] 폴더 생성<br />
+* [R_project] 폴더에 [DAT] 폴더 생성<br />
+* 데이터 스토어에서 샘플데이터(3.아파트_주소기반_주택지역특성시세정보_DB.xlsx)를 "C:/R_project/DAT/"에 다운로드  (<https://www.datastore.or.kr/file/detail?id=2c0a9616-4d78-403c-9d77-3db2effb2a74&page=1&viewCount=10&sort=1&order=1&source=1&keyword=%EC%95%84%ED%8C%8C%ED%8A%B8>)<br />
+* 서울/수도권 및 5대광역시 아파트에 대한 주소테이블 외 4개의 테이블(정보집단)로 구성되며 각각 주택특성정보, 지역특성정보, 가격/신뢰등급/예상회수율정보 테이블로 이루어져 있고, 각 테이블간은 고유키값(NUM)으로 연계되어 있음 
+<br />
+<br />
+
+**[데이터 호출]** 용산구 데이터
+```{r data import : Real Estate Data}
+path                  <- "C:/R_project/DAT/3.아파트_주소기반_주택지역특성시세정보_DB.xlsx"
+sheet.names           <- excel_sheets(path)
+
+df1                   <- read_excel(path, sheet.names[1])
+df2                   <- read_excel(path, sheet.names[2])
+df3                   <- read_excel(path, sheet.names[3])
+df4                   <- read_excel(path, sheet.names[4])
+data                  <- Reduce(function(x, y) merge(x, y, all=FALSE), list(df1, df2, df3, df4))
+
+data$LAND_ACCESS      <- as.numeric(as.character(data$LAND_ACCESS))
+data                  <- data[complete.cases(data), ]
+
+gu_rows               <- data$SGG == "용산구"  # 용산구에 해당하는 데이터 행 
+gu_data               <- data[gu_rows, ]
+
+EMD_data              <- gu_data[!duplicated(gu_data$EMD), c(8, 52, 53)] 
+head(EMD_data)
+```
+* EMD: 읍, 면, 동
+* SUPPLY: 주택수
+* EXCESS_DEMAND: 초과수요
+<br /> 
+<br /> 
+
+### **2. 계층적 군집분석**
+<br />
+
+**[유사도 거리 계산]** 유클리드거리
+```{r hierarchical clustering : euclidean}
+attach(EMD_data)
+x                     <- EMD_data[, 2:3]
+D1                    <- dist(x)
+D1 
+```
+<br /> 
+
+**[유사도 거리 계산]** 맨하탄거리
+```{r hierarchical clustering : manhattan}
+D2                    <- dist(x, method = "manhattan") 
+D2
+```
+<br /> 
+
+**[계층적 군집 분석]** 최단 연결법
+```{r hierarchical clustering : single link}
+hc1                   <- hclust(dist(x)^2, method = "single")
+plot(hc1, labels = EMD, hang = 1, main = "dendrogram : 최단 연결법")
+```
+<br /> 
+<br /> 
+
+**[계층적 군집 분석]** 최장 연결법
+```{r hierarchical clustering : complete link}
+hc2                   <- hclust(dist(x)^2, method = "complete")   
+plot(hc2, labels = EMD, hang=1, main = "dendrogram : 최장 연결법")
+```
+<br /> 
+<br /> 
+
+**[군집 설정 및 시각화]** 군집 수 설정 후 그룹 별 산점도로 결과 확인 : 최단 연결법 
+```{r plot : single link}
+c1.num                <- 2  
+hc1.result            <- cutree(hc1, k = c1.num) #최단 연결법 결과
+plot(x, pch = hc1.result, col = hc1.result, main = "single")
+text(x, labels = EMD, adj = -0.1, cex = 0.8)
+```
+<br /> 
+<br /> 
+
+**[군집 설정 및 시각화]** 군집 수 설정 후 그룹 별 산점도로 결과 확인 : 최장 연결법 
+```{r plot : complete link}
+hc2.result            <- cutree(hc2, k = c1.num) 
+plot(x, pch =  hc2.result, col = hc2.result, main = "complete")
+text(x, labels = EMD, adj = -0.1, cex = 0.8)
+```
+<br /> 
+<br /> 
+
+### **3. 비계층적 군집분석**
+<br />
+
+<span style="color:blue"> **k-means clustering** </span>
+<br />
+<br />
+
+**[군집 설정]** 군집 수 = 3
+```{r k-means clustering}
+data_k                <- kmeans(x ,centers = 3) 
+attributes(data_k)
+data_k$cluster
+```
+<br /> 
+
+**[군집화]** grouping
+```{r k means : grouping}
+clus                  <- cbind(EMD_data, x, data_k$cluster)
+clus1                 <- clus[(clus[,4] == 1), ]
+clus2                 <- clus[(clus[,4] == 2), ]
+clus3                 <- clus[(clus[,4] == 3), ]
+kc                    <- table(data_k$cluster)
+plot(x, pch = data_k$cluster, col = data_k$cluster, main = "K-means clustering")
+text(x, labels = EMD, adj = -0.1, cex = 0.8)
+```
+<br /> 
+<br /> 
+
+
+<span style="color:blue"> **SOM(Self-Organization-Map)** </span>
+<br />
+<br />
+
+**[데이터 호출]**  
+```{r data import : above data}
+
+som_data              <- data[!duplicated(EMD), c(48:53)]
+head(som_data, 5)
+```
+* POPULATION: 인구수
+* HOUSEHOLD: 가구수
+* PPH: 세대당 인구수
+* SINGLE_HOUSEHOLD: 1인 가구수
+* SUPPLY: 주택수
+* EXCESS_DEMAND: 초과수요
+<br /> 
+<br />
+
+**[데이터 변환]** 변수들간의 표준화(단위 환산)
+```{r data scaling}
+apart.sc              <- scale(som_data)
+```
+<br /> 
+
+**[분석]** grid 설정 후 군집분석 <br /> 
+som에 활용할 grid는 somgrid함수 활용
+  + xdim, ydim : dimensions of the grid
+  + topo       : 각 노드들이 연결되는 방식
+```{r SOM}
+set.seed(7)
+apart.som             <- som(apart.sc, grid = somgrid(13, 13, topo = "hexagonal"))
+```
+<br /> 
+
+**[결과]** SOM 결과 확인 
+```{r summary som}
+summary(apart.som)
+```
+<br /> 
+
+**[시각화]**
+```{r som plot(basic)}
+plot(apart.som, main="Apartment data")
+```
+<br /> 
+<br /> 
+
+**[시각화]** SOM 분류결과 : count
+```{r som plot : count}
+plot(apart.som, type="counts", main="Apartment data: counts")
+```
+<br /> 
+<br /> 
+
+**[시각화]** SOM 분류결과 : quality
+```{r som plot : quality}
+plot(apart.som, type="quality", main="Apartment data: mapping quality")
+```
+<br /> 
+<br /> 
+
+**[시각화]** SOM 분류결과 : mapping
+```{r som plot : mapping}
+plot(apart.som, type="mapping", col = apart.som$unit.classif, main="mapping plot")
+```
+<br /> 
+<br /> 
+
+**[시각화]** SOM code vector에 따른 분류결과 색으로 구분 
+```{r som plot gradation}
+par(mfrow=c(1, 3))
+colour1               <- tricolor(apart.som$grid)
+plot(apart.som, "mapping", bg=rgb(colour1))
+colour2               <- tricolor(apart.som$grid, phi=c(pi/6, 0, -pi/6))
+plot(apart.som, "mapping", bg=rgb(colour2))
+colour3               <- tricolor(apart.som$grid, phi=c(pi/6, 0, -pi/6), offset= .5)
+plot(apart.som, "mapping", bg=rgb(colour3))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,236 @@
+---
+title: "R interface to Keras"
+author: "Soh Jin U"
+date: '2020 6 30 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Install package keras
+
+```{r}
+# “keras” 패키지를 최초 설치시 구동
+# 설치는 한 번만 진행
+#install.packages(“keras”)
+
+# 설치된 “keras” 패키지를 R 작업환경으로
+# import 함
+library(keras)
+
+# Deep learning 분석에 필요한 Python의
+# Tensorflow와 keras를 설치
+#install_keras()
+
+```
+
+<br/>
+
+## Fashion mnist
+
+* Fashion mnist 데이터 다운로드
+
+```{r}
+fashion_mnist <- keras::dataset_fashion_mnist()
+
+```
+
+<br/>
+
+* train data와 test data로 나누기
+
+```{r}
+#train data
+train_x <- array_reshape(fashion_mnist$train$x, dim = c(60000, 28*28))
+train_x <- train_x/255
+train_y <- to_categorical(fashion_mnist$train$y)
+
+#test data
+test_x <- array_reshape(fashion_mnist$test$x, dim = c(10000, 28*28))
+test_x <- test_x/255
+test_y <- to_categorical(fashion_mnist$test$y)
+```
+
+<br/>
+
+* Image data 출력하기
+
+```{r}
+par(mfrow=c(3,5), mar=c(0,0,0,0), mai=c(0,0,0,0))
+for(I in 1:15){
+  train_image_tmp <- as.raster(fashion_mnist$train$x[I,,],
+		 max=255)
+  plot(train_image_tmp)
+}
+dev.off()
+
+```
+
+<br/>
+
+* Model 정의
+
+```{r}
+# input layer
+input_shape <- layer_input(shape = 784)
+
+# intermediate layer
+intermediate_layer <- layer_dense(input_shape, units = 256, activation = "relu")
+dropout_layer <- layer_dropout(intermediate_layer, 0.6)
+output_layer <- layer_dense(dropout_layer, units = 10, activation = "softmax")
+
+# model
+nnet <- keras_model(input_shape, output_layer)
+
+# 모델 확인
+summary(nnet)
+```
+
+<br/>
+
+* Compiling & Fitting
+
+```{r}
+# Compile
+nnet %>% compile(
+  loss='categorical_crossentropy',
+  optimizer=optimizer_rmsprop(),
+  metrics='accuracy'
+)
+
+# fitting
+history <- nnet %>% fit(
+  train_x, train_y,
+  batch_size=128,
+  epochs=30,
+  validation_data = list(test_x, test_y)
+)
+```
+
+<br/>
+
+* Evaluation & Prediction
+
+```{r}
+# Evaluation
+nnet %>% evaluate(test_x, test_y)
+
+# Prediction
+y_hat <- nnet %>% 	predict(test_x) %>% 
+  apply(1, which.max)
+res <- table(fashion_mnist$test$y, y_hat)
+label <- c("T_shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot")
+dimnames(res) <- list(label, label)
+names(dimnames(res)) <- 
+  c("True", "Predicted")
+print(res)
+```
+
+<br/>
+
+## Mnist 
+
+* 데이터 전처리
+
+```{r}
+batch_size <- 128
+num_classes <- 10
+epochs <- 12
+
+# Input image dimensions
+img_rows <- 28
+img_cols <- 28
+
+# train data와 test data로 나누기
+mnist <- dataset_mnist()
+x_train <- mnist$train$x
+y_train <- mnist$train$y
+x_test <- mnist$test$x
+y_test <- mnist$test$y
+
+# redefine dimensions
+x_train <- 
+array_reshape(x_train,c(nrow(x_train),
+		img_rows,img_cols,1))
+x_test <-
+array_reshape(x_test,c(nrow(x_test),
+		img_rows,img_cols,1))
+input_shape <- c(img_rows,img_cols,1)
+
+#transform RGB values into [0,1]range
+x_train <- x_train / 255
+x_test <- x_test / 255
+
+# train data & test data 정보
+cat('x_train_shape:',dim(x_train),'\n')
+cat(nrow(x_train), 'train samples\n')
+cat(nrow(x_test), 'test samples\n')
+
+# convert class vectors to binary 
+# class matrices 
+y_train <- to_categorical(y_train,num_classes)
+y_test <- 
+to_categorical(y_test, num_classes)
+
+```
+
+
+<br/>
+
+* Define model
+```{r}
+model <- keras_model_sequential() %>%
+  layer_conv_2d(filters = 32, kernel_size = c(3,3), activation = 'relu',input_shape = input_shape) %>% 
+  layer_conv_2d(filters = 64, kernel_size = c(3,3), activation = 'relu') %>% 
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>% 
+  layer_dropout(rate = 0.25) %>% 
+  layer_flatten() %>% 
+  layer_dense(units = 128, activation = 'relu') %>% 
+  layer_dropout(rate = 0.5) %>% 
+  layer_dense(units = num_classes, activation = 'softmax')
+```
+
+<br/>
+
+* Compile model
+```{r}
+model %>% compile(
+  loss = loss_categorical_crossentropy,
+  optimizer = optimizer_adadelta(),
+  metrics = c('accuracy')
+)
+```
+
+<br/>
+
+* Train model
+```{r}
+model %>% fit(
+  x_train, y_train,
+  batch_size = batch_size,
+  epochs = epochs,
+  validation_split = 0.2
+)
+scores <- model %>% evaluate(
+  x_test, y_test, verbose = 0
+)
+```
+
+<br/>
+
+* Evaluation & Prediction
+```{r}
+#Evaluation
+scores
+
+#Prediction
+yy_hat <- model %>% predict(x_test) %>%
+  apply(1,which.max)
+res_m <- table(mnist$test$y, yy_hat)
+label_m <- c("0","1","2","3","4","5","6","7","8","9")
+dimnames(res_m) <- list(label_m,label_m)
+names(dimnames(res_m)) <-c("True","Predicted")
+print(res_m)
+```

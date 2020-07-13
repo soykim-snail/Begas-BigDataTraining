@@ -1,0 +1,192 @@
+---
+title: "▒ 주성분분석 ▒"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<br /> 
+
+### **0. 환경설정**
+<br />
+
+``` {r set env, echo = TRUE, message = FALSE}
+# install.packages("factoextra")
+library(datasets)
+library(factoextra)
+library(readxl)
+```
+<br />
+
+**[Define function]** Correlation panel
+```{r define fun- 1 , echo = TRUE, message = FALSE}
+panel.cor             <- function(x, y){
+  usr                 <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r                   <- round(cor(x, y), digits = 2)
+  txt                 <- paste0("   R = ", r)
+  cex.cor             <- 0.9/strwidth(txt)
+  text(0.3, 0.3, txt, cex = cex.cor * r)
+}
+```
+<br />
+
+**[Define function]** Customize upper panel
+```{r define fun- 2 , echo = TRUE, message = FALSE}
+upper.panel           <-function(x, y){
+  points(x,y, pch = 19, col = "#FC4E07")
+}
+```
+<br /> 
+<br /> 
+
+### **1. Data Load**
+<br />
+
+<span style="color:blue"> **(Q) Colinearity가 매우 높다. 차원을 축소할 수 있을까?** </span>
+<br />
+<br />
+
+**[데이터 다운로드]** <br />
+
+* C드라이브에 [R_project] 폴더 생성<br />
+* [R_project] 폴더에 [DAT] 폴더 생성<br />
+* 데이터 스토어에서 샘플데이터(3.아파트_주소기반_주택지역특성시세정보_DB.xlsx)를 "C:/R_project/DAT/"에 다운로드  (<https://www.datastore.or.kr/file/detail?id=2c0a9616-4d78-403c-9d77-3db2effb2a74&page=1&viewCount=10&sort=1&order=1&source=1&keyword=%EC%95%84%ED%8C%8C%ED%8A%B8>)<br />
+* 서울/수도권 및 5대광역시 아파트에 대한 주소테이블 외 4개의 테이블(정보집단)로 구성되며 각각 주택특성정보, 지역특성정보, 가격/신뢰등급/예상회수율정보 테이블로 이루어져 있고, 각 테이블간은 고유키값(NUM)으로 연계되어 있음 
+<br />
+<br />
+
+**[데이터 호출]**
+```{r data load mtcars}
+path                  <- "C:/R_project/DAT/3.아파트_주소기반_주택지역특성시세정보_DB.xlsx"
+sheet.names           <- excel_sheets(path)
+
+df1                   <- read_excel(path, sheet.names[1])
+df2                   <- read_excel(path, sheet.names[2])
+df3                   <- read_excel(path, sheet.names[3])
+df4                   <- read_excel(path, sheet.names[4])
+data                  <- Reduce(function(x, y) merge(x, y, all=FALSE), list(df1, df2, df3, df4))
+
+data$LAND_ACCESS      <- as.numeric(as.character(data$LAND_ACCESS))
+data1                 <- data[complete.cases(data), c(25:27, 48, 49, 85)]
+
+head(data1, 5)
+```
+* PRIV_AREA: 전유면적 
+* PUB_AREA: 공유면적 
+* SUM_AREA: 계약면적 
+* POPULATION: 인구수 
+* HOUSEHOLD: 가구수
+* PRICE_GEN: 일반거래시세
+<br /> 
+<br />
+
+### **2.Scatter Plot & Correlation**
+<br />
+
+**[상관성 확인]**
+```{r sc plot and correlation}
+pairs(data1, lower.panel = panel.cor, upper.panel = upper.panel)
+```
+<br /> → 상관관계가 매우 높은것으로 판단되므로 차원 축소가 필요함
+<br />
+<br /> 
+
+
+### **3. PCA 수행**
+<br />
+
+**[Eigen decomposition]** 표준화를 위해 center&scale = T
+```{r PCA 1}
+pca_result_data       <- prcomp(data1, center = T, scale. = T)
+```
+<br /> 
+
+**[Eigen value]**
+```{r PCA Eigen value}
+data.frame("고유값" = pca_result_data$sdev^2)
+```
+<br /> 
+
+**[Eigen Vector]** 
+```{r Eigen Vector }
+data.frame(pca_result_data$rotation)
+```
+<br /> 
+
+**[누적 기여도]**
+```{r cumulative variant}
+summary(pca_result_data)
+```
+→ 각 주성분에 해당하는 고유값과 고유벡터 확인 가능<br /> 
+→ 평균 고유값(=1) 이상인 제1, 2 주성분 선택<br /> 
+→ 제1, 2 주성분을 선택 하였을 때 설명력은 약 85.49%임
+<br /> 
+<br /> 
+
+### **4. Scree Plot**
+<br />
+
+```{r Scree Plot}
+fviz_eig(pca_result_data, main = "Scree Plot", barcolor = "#00AFBB", barfill = "#00AFBB", linecolor = "#FC4E07", 
+         xlab = "Principal Component", ylab = "Proportion of Variance")
+```
+<br />
+→ 기울기가 급감하는 지점을 통해 주성분 개수를 2로 설정
+<br /> 
+<br /> 
+
+### **5. Biplot Plot**
+<br />
+
+```{r Biplot Plot}
+fviz_pca_biplot(pca_result_data, select.ind = list(contrib = 20), col.ind="#00AFBB") +
+  theme_minimal()
+```
+<br /> 
+<br /> 
+
+## **6. 주성분 점수 계산**
+<br />
+
+```{r}
+data1_pc              <- cbind(data1, pc1 = predict(pca_result_data)[, 1], pc2 = predict(pca_result_data)[, 2])
+head(data1_pc)
+```
+<br /> 
+<br /> 
+
+
+
+<span style="font-size:1.5em;color:red">**결론**</span><br /> 
+
+* Colinearity가 높은 6개의 변수를 차원축소를 통해 2개의 변수변환 하여 전체 변동의 85.49% 설명 가능<br /> 
+* 생성된 주성분은 회귀분석, 군집분석 등의 Input 변수로 활용 가능 함<br /> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

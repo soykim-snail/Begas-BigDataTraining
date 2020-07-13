@@ -1,0 +1,311 @@
+---
+title: "▒ 고급회귀분석 ▒"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F)
+```
+<br /> 
+
+### **0. 환경설정**
+<br />
+
+``` {r set env, echo = TRUE, message = FALSE}
+#install.packages("factoextra")
+#install.packages("plotmo")
+#install.packages("ggplot2")
+#install.packages("pls")
+#install.packages("glmnet")
+library(factoextra)
+library(plotmo)
+library(ggplot2)
+library(pls)
+library(glmnet)
+library(readxl)
+```
+<br />
+
+**[Define function]** Correlation panel
+```{r define fun- 1 , echo = TRUE, message = FALSE}
+panel.cor             <- function(x, y){
+  usr                 <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r                   <- round(cor(x, y), digits = 2)
+  txt                 <- paste0("   R = ", r)
+  text(0.5, 0.3, txt, cex = 1)
+}
+```
+<br />
+
+**[Define function]** Customize upper panel
+```{r define fun- 2}
+upper.panel<-function(x, y){
+  points(x, y, pch = 19, col = "#FC4E07")
+}
+```
+<br />
+
+**[option]** options by plot
+```{r options by plot}
+options(repr.plot.width = 6, repr.plot.height = 5) 
+```
+<br /> 
+<br /> 
+
+### **1. 예제 데이터**
+<br />
+
+**[데이터 다운로드]** <br />
+
+* C드라이브에 [R_project] 폴더 생성<br />
+* [R_project] 폴더에 [DAT] 폴더 생성<br />
+* 데이터 스토어에서 샘플데이터(3.아파트_주소기반_주택지역특성시세정보_DB.xlsx)를 "C:/R_project/DAT/"에 다운로드  (<https://www.datastore.or.kr/file/detail?id=2c0a9616-4d78-403c-9d77-3db2effb2a74&page=1&viewCount=10&sort=1&order=1&source=1&keyword=%EC%95%84%ED%8C%8C%ED%8A%B8>)<br />
+* 서울/수도권 및 5대광역시 아파트에 대한 주소테이블 외 4개의 테이블(정보집단)로 구성되며 각각 주택특성정보, 지역특성정보, 가격/신뢰등급/예상회수율정보 테이블로 이루어져 있고, 각 테이블간은 고유키값(NUM)으로 연계되어 있음 
+<br />
+<br />
+
+**[데이터 호출]** 
+```{r data import}
+path                  <- "C:/R_project/DAT/3.아파트_주소기반_주택지역특성시세정보_DB.xlsx"
+sheet.names           <- excel_sheets(path)
+
+df1                   <- read_excel(path, sheet.names[1])
+df2                   <- read_excel(path, sheet.names[2])
+df3                   <- read_excel(path, sheet.names[3])
+df4                   <- read_excel(path, sheet.names[4])
+data                  <- Reduce(function(x, y) merge(x, y, all=FALSE), list(df1, df2, df3, df4))
+
+data$LAND_ACCESS      <- as.numeric(as.character(data$LAND_ACCESS))      
+data1                 <- data[complete.cases(data), c(97, 41, 93, 49:53, 25:27)]
+head(data1, 5)
+```
+* AVM_RECOVER : 회수가능금액
+* LAND_ACCESS : 개별공시지가
+* APPRAISAL_FEE : 감정평가수수료
+* HOUSEHOLD : 가구수
+* PPH : 세대당인구수
+* SINGLE_HOUSEHOLD : 1인가구수
+* SUPPLY : 주택수
+* EXCESS_DEMAND : 초과수요
+* PRIV_AREA : 전유면적
+* PUB_AREA : 공유면적
+* SUM_AREA : 계약면적
+<br /> 
+<br />
+
+```{r correlation plot}
+pairs(data1, lower.panel = panel.cor, upper.panel = upper.panel)
+```
+<br /> 
+<br /> 
+
+
+### **2.주성분 회귀분석** 
+<br /> 
+
+**[주성분 분석]**
+```{r PCA}
+data_pca              <- princomp(data1[-1], cor = TRUE)
+summary(data_pca)
+summary(data_pca)$loadings
+```
+<br /> 
+
+**[scree plot]**
+```{r scree plot in PCA}
+fviz_eig(data_pca, main = "Scree Plot", barcolor = "#00AFBB", barfill = "#00AFBB", 
+         linecolor = "#FC4E07", xlab = "Principal Component", ylab = "Proportion of Variance")
+```
+<br /> 
+<br /> 
+
+**[score값 계산]**  
+```{r score in PCA}
+data_score            <- data.frame(summary(data_pca)$score) 
+```
+<br />
+
+**[모형적합]** 모든 주성분을 이용한 회귀모형 
+```{r linear model using PC 3}
+data_score_lm         <- lm(data1$AVM_RECOVER  ~ Comp.1 + Comp.2 + Comp.3 + Comp.4 + Comp.5 + Comp.6 + Comp.7 +
+                              Comp.8 + Comp.9 + Comp.10 , data = data_score)
+summary(data_score_lm)
+```
+→ 제9주성분과 제10주성분을 제외하고 모두 유의하다.<br /> 
+<br /> 
+
+**[모형적합]** 제8주성분까지 이용한 회귀모형 
+```{r linear model using PC 2}
+data_score_lm         <- lm(data1$AVM_RECOVER ~ Comp.1 + Comp.2 + Comp.3 + Comp.4 + Comp.5 + Comp.6 + Comp.7 +
+                              Comp.8, data = data_score)
+summary(data_score_lm)
+```
+→ 제 8주성분까지 사용하더라도,  **_0.9972_**(Adjusted R-squared)로 모든 주성분을 사용한 모형과 차이가 없음을 확인할 수 있다.
+<br /> 
+<br />
+
+### **3. 부분 최소 제곱**
+<br />
+
+**[모형적합]** 기본 모형
+```{r model fit pls}
+set.seed(1)
+data_pls1             <- plsr(AVM_RECOVER ~ ., ncomp = 10, data = data1, validation = "CV")
+summary(data_pls1)
+```
+<br />
+
+**[모형적합]** 최적 성분수 결정
+```{r plot pls}
+pls.RMSEP             <- RMSEP(data_pls1)
+plot(pls.RMSEP, main="RMSEP PLS Solubility", xlab="components")
+min_comp              <- which.max(abs(diff(pls.RMSEP$val[2,,])))
+abline(v = min_comp, col="red")
+```
+<br />
+→ 성분의 개수가 **_3_**개까지 급격히 감소하므로 최적의 성분 개수는 **_3_**개
+<br />
+<br />
+
+**[모형적합]** 최적의 성분 개수인 3개의 성분을 가지는 부분 최소 제곱 회귀 모형 적합
+```{r model fit pls comp 3}
+set.seed(1)
+data_pls2             <- plsr(AVM_RECOVER ~ ., ncomp = min_comp, data = data1)
+plot(data_pls1$fitted.values[, , 2], data1$AVM_RECOVER, pch = 19,
+     col = "dodgerblue", xlab = "fitted value", ylab = "real")
+abline(0, 1, col = 2, lwd = 1.5)
+```
+<br />
+<br />
+
+
+### **4. Shrinkage Method**
+<br />
+
+**[상관성 확인]**
+```{r sc plot Shrinkage Method}
+pairs(data1, lower.panel = panel.cor, upper.panel = upper.panel)
+```
+<br />
+
+**[변수 지정]** 반응 변수
+```{r set response var}
+y                     <- data1[, 1]
+```
+<br />
+
+**[변수 지정]** 설명 변수
+```{r set explain var}
+x                     <- data1[, -1]
+```
+<br />
+<br />
+
+<span style = "color:blue"> **Ridge** </span> <br />
+<br />
+
+**[모형적합]** 기본모형
+```{r ridge regression}
+set.seed(1)
+ridge.fit             <- glmnet(as.matrix(x), y, alpha = 0) # alpha=0: ridge, 1: lasso
+```
+<br />
+
+**[모형적합]** 최적 조율 모수
+```{r find parameter ridge}
+set.seed(1234) # random number fix
+cv.ridge              <- cv.glmnet(as.matrix(x), y, alpha = 0)
+plot(cv.ridge)
+round(cv.ridge$lambda.min, 4)
+```
+→ shrinkage factor가 4059.499(log 변환 시 8.308815)일 때 MSE가 가장 작으므로 best model
+<br />
+<br /> 
+
+**[결과]** Ridge 회귀계수
+```{r ridge coefficient}
+coef(ridge.fit, s = cv.ridge$lambda.min)
+```
+→ 모든 변수의 계수가 추정됨
+<br />
+<br /> 
+
+**[시각화]**
+```{r plot_glmnet Ridge} 
+plot_glmnet(ridge.fit, label = TRUE)
+```
+<br />
+<br />
+
+
+<span style = "color:blue"> **Lasso** </span> <br />
+<br />
+
+**[모형적합]** 
+```{r model fit lasso}
+lasso.fit             <- glmnet(as.matrix(x), y, alpha = 1)
+```
+<br />
+
+**[모형적합]**  최적 조율 모수
+```{r find parameter lasso}
+set.seed(1234) 
+cv.lasso              <- cv.glmnet(as.matrix(x), y, alpha = 1)  
+plot(cv.lasso)
+round(cv.lasso$lambda.min, 4)
+```
+→ shrinkage factor가 202.0422(log 변환 시 5.308477) 일때 MSE가 가장 작으므로 best model
+<br /><br /> 
+
+**[결과]** Lasso 회귀계수
+```{r lasso coefficient}
+coef(lasso.fit, s = cv.lasso$lambda.min)
+```
+→ LAND_ACCESS, PPH, SINGLE_HOUSEHOLD, SUPPLY, EXCESS_DEMAND, PRIV_AREA, PUB_AREA이 제외되어 모형적합
+<br />
+<br /> 
+
+**[시각화]**
+```{r plot_glmnet lasso}
+plot_glmnet(lasso.fit, label = TRUE)
+```
+<br />
+<br />
+
+
+<span style = "color:blue"> **Elasticnet** </span> <br />
+<br />
+
+**[모형적합]** 기본 모형 
+```{r model fit els}
+elas.fit              <- glmnet(as.matrix(x), y, alpha = 0.5)
+```
+<br />
+
+**[모형적합]** 최적 조율 모수
+```{r find parameter els}
+set.seed(1234)
+cv.elas               <- cv.glmnet(as.matrix(x), y, alpha = 0.5) 
+plot(cv.elas)
+round(cv.elas$lambda.min, 4)
+```
+→ shrinkage factor가  253.7768(log 변환 시 5.536455)일 때 MSE가 가장 작으므로 best model
+<br />
+<br /> 
+
+**[결과]** Elasticnet 회귀계수
+```{r els coefficient}
+coef(elas.fit, s = cv.elas$lambda.min)
+```
+→ LAND_ACCESS, PPH, SINGLE_HOUSEHOLD, SUPPLY, PUB_AREA이 제외됨
+<br />
+<br /> 
+
+**[시각화]**
+```{r plot_glmnet els}
+plot_glmnet(elas.fit, label = TRUE)
+```
+<br />
