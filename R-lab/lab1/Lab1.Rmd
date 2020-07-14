@@ -49,7 +49,7 @@ library(quantmod)
 ```{r warning=FALSE}
 options("getSymbols.warning4.0"=FALSE)
 samsung = getSymbols("005930.KS",auto.assign = FALSE)
-head(samsung)
+tail(samsung)
 ```
 
 ```{r}
@@ -70,6 +70,8 @@ plot(samsung.ret, main="stock returns",type='l')
 ```{r warning=FALSE}
 ret <- as.vector(samsung.ret) # from xts to numeric
 which(is.na(ret))
+```
+```{r}
 ret = ret[-which(is.na(ret))]
 ```
 
