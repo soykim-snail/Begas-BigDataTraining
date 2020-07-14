@@ -1,0 +1,373 @@
+---
+title: "Basic1"
+author: "Minji Kim"
+date: '2020 7 14 '
+output: html_document
+---
+
+```{r echo=T, results='hide'}
+## Install packages
+#install.packages("tm")
+#install.packages("wordcloud")
+#install.packages("ggplot2")
+
+## Load packages
+library(tm)
+library(wordcloud)
+library(ggplot2)
+```
+
+
+## 1 : 텍스트 시각화
+```{r}
+################################################################################
+########################## 1. 그림을 이용한 요약
+################################################################################
+
+
+letters; LETTERS
+seq(1,1000,len = 62)
+wordcloud(c(letters, LETTERS, 0:9),seq(1, 1000, len = 62))
+```
+## 2 : 텍스트 시각화
+
+```{r}
+
+data(crude)
+wordcloud(crude)
+```
+## 3 : scatter plot (산점도)
+```{r}
+data(iris)
+ggplot() + geom_point(data=iris, aes(x=Sepal.Length, y=Sepal.Width) ) + xlab ('sepal length') + ylab('sepal width') + ggtitle("Iris")+ theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+
+geom_line generates line geometries.
+
+```{r}
+## 4 : scatter plot (conti.)
+ggplot() + geom_point(data=iris, aes(x=Sepal.Length, y=Sepal.Width), shape = 3, color='red', cex=2) + xlab ('sepal length') + ylab('sepal width') + ggtitle("Iris")+ theme(plot.title = element_text(hjust = 0.5)) 
+
+ggplot() + geom_line(data=iris, aes(x=Sepal.Length, y=Sepal.Width)) + xlab ('sepal length') + ylab('sepal width') + ggtitle("Iris")+ theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+```{r}
+head(colors(),20)
+
+```
+
+A violin plot is a symmetrical version of a density plot which provides greater detail of a sample’s distribution than a boxplot.
+
+```{r}
+## 5 : scatter plot (conti.)
+
+ggplot() + geom_violin(data=iris, aes(x="", y=Sepal.Width), fill="pink") + ylab('sepal width') + ggtitle("Iris")+ theme(plot.title = element_text(hjust = 0.5))
+
+ggplot(iris, aes(x = Sepal.Width)) + geom_histogram(fill = "tomato") 
+```
+
+```{r}
+## 6 : scatter plot (conti.)
+ggplot() + geom_point(data=iris, aes(x=Sepal.Length, y=Sepal.Width)) + xlab ('length') + ylab('width') + ggtitle("Iris")+ theme(plot.title = element_text(hjust = 0.5)) +
+   geom_point(data=iris, aes(x=Petal.Length, y=Petal.Width), shape = 3, color='tomato', cex=3)
+
+```
+```{r}
+## 7 : scatter plot (conti.)
+x <- seq(0, 2*pi, 0.1)
+y <- sin(x)
+y2 <- sin(3*seq(0, 2*pi, 0.1))
+plot(x, y)
+lines(x, y, col="purple")
+lines(x, y2, col="orange")
+```
+```{r}
+## 8 : scatter plot (conti.)
+plot(iris$Sepal.Length,iris$Sepal.Width, xlab="sepal length", 
+     ylab="sepal width", main="Iris")
+text(iris$Sepal.Length,iris$Sepal.Width, pos=2, cex=0.5 )
+
+
+ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width) )  +geom_point(pch='+')+ xlab ('sepal length') + ylab('sepal width') + ggtitle("Iris")+ 
+   theme(plot.title = element_text(hjust = 0.5))  + geom_text( aes(label = rownames(iris)))
+
+```
+
+```{r}
+## 9 : scatter plot (conti.)
+plot(iris$Sepal.Length , iris$Sepal.Width , cex=1.5, pch=20, 
+     xlab="length", ylab="width", main="Iris")
+
+points(iris$Petal.Length , iris$Petal.Width , cex=1.5, pch="+", 
+       col="tomato")  # or pch="43" does same
+
+legend("topright", legend=c("Sepal", "Petal"), pch=c(20, 43), 
+       col=c("black", "tomato"), bg="white")
+
+ggplot() + geom_point(data=iris, aes(x=Sepal.Length, y=Sepal.Width, colour = 'sepal')) + xlab ('length') + ylab('width') + ggtitle("Iris")+ theme(plot.title = element_text(hjust = 0.5)) +
+   geom_point(data=iris, aes(x=Petal.Length, y=Petal.Width, colour='petal'), shape = 3, cex=3) 
+
+```
+
+https://stackoverflow.com/questions/3735286/create-a-matrix-of-scatterplots-pairs-equivalent-in-ggplot2
+```{r}
+## 10 : scatter plot (conti.)
+pairs(~Sepal.Width + Sepal.Length + Petal.Width + Petal.Length, 
+      data=iris, col=c("red", "green", "blue")[iris$Species])
+```
+
+## 11 : bar plot (막대그림)
+```{r}
+barplot(tapply(iris$Sepal.Width,iris$Species,mean))
+```
+
+## 12 : 연속형 자료의 이산형 자료로의 변환
+```{r}
+partition <- cut(iris$Sepal.Width , breaks=10) 
+head(partition,3)
+
+table(partition)    
+```
+
+## 13 : pie chart (원도표)
+```{r}
+pie(table(cut(iris$Sepal.Width , breaks=10)), cex=1.5)
+```
+
+## 14 : histogram (히스토그램)
+```{r}
+hist(iris$Sepal.Width)
+```
+```{r}
+## 15 : histogram (conti.)
+par(mfrow=c(1,2))
+
+hist(iris$Sepal.Width,breaks=20)
+
+hist(iris$Sepal.Width,freq=FALSE)
+
+ggplot(iris, aes(x = Sepal.Width)) + geom_histogram(binwidth = .5) 
+```
+
+## 16 : histograrm (density plot)
+```{r}
+par(mfrow=c(1,2))
+
+plot(density(iris$Sepal.Width))
+
+hist(iris$Sepal.Width,freq=FALSE)
+
+lines(density(iris$Sepal.Width),col='rosybrown')
+
+ggplot(data=iris, aes(x=Sepal.Width))+ geom_histogram(binwidth=0.2, color="black", fill="steelblue", aes(y=..density..)) +
+  geom_density(stat="density", alpha=I(0.2), fill="blue") +
+  xlab("Sepal Width") +  ylab("Density") + ggtitle("Histogram & Density Curve")
+```
+
+## 17 : scatter plot (산점도)
+```{r}
+dev.off()
+
+plot(faithful$eruptions,faithful$waiting,xlab='Eruptions',
+     ylab='Waiting',cex.lab=2,cex.axis=1)
+```
+
+## 18 : scatter plot (Species로 구분하여 plotting)
+```{r}
+plot(iris$Petal.Length,iris$Petal.Width,xlab='Petal.Length',
+     ylab='Petal.Width',cex.lab=2,cex.axis=2,type='n',cex=2)
+
+# iris$Species=='setosa'
+# iris$Petal.Length[iris$Species=='setosa']
+
+# setosa 점찍기
+points(iris$Petal.Length[iris$Species=='setosa'],
+       iris$Petal.Width[iris$Species=='setosa'],col='red')
+
+# versicolor 점찍기
+points(iris$Petal.Length[iris$Species=='versicolor'],
+       iris$Petal.Width[iris$Species=='versicolor'],col='blue')
+
+# virginical 점찍기
+points(iris$Petal.Length[iris$Species=='virginica'],
+       iris$Petal.Width[iris$Species=='virginica'],col='green')
+
+ggplot(iris, aes(x=Petal.Length, y=Petal.Width, colour=Species))+geom_point()
+
+```
+
+## 19 : 중심 측도 (평균, 중앙값, 최대값)
+```{r}
+################################################################################
+########################3# 수치를 이용한 요약
+################################################################################
+
+length(faithful$waiting)
+
+mean(faithful$waiting)
+
+median(faithful$waiting)
+
+freq=tabulate(faithful$waiting)
+
+tabulate(c(2,3,3,5))
+
+max(freq)
+
+which.max(freq)
+```
+
+## 20 : 산포 (분산, 표준편차)
+```{r}
+n=length(faithful$eruptions)
+
+sum((faithful$eruptions - mean(faithful$eruptions))^2)/(n-1) 
+
+var(faithful$eruptions) 
+
+sqrt(var(faithful$eruptions))
+
+sd(faithful$eruptions) 
+```
+
+## 21 : 산포 (IQR, 범위)
+```{r}
+pquant=quantile(faithful$eruptions,probs=c(0.25,0.5,0.75))
+
+pquant[3]-pquant[1]   # IQR
+
+IQR(faithful$eruptions)   # IQR 명령어
+
+max(faithful$eruptions)-min(faithful$eruptions)   # 표본의 범위
+
+R=range(faithful$eruptions)   # range를 벡터로 구해주는 명령어
+R
+R[2]-R[1]
+```
+
+## 22 : 수치 요약 
+```{r}
+iqr.val=IQR(faithful$eruptions)
+
+c(pquant[1]-1.5*iqr.val, pquant[3] +1.5*iqr.val)
+
+faithful$eruptions[faithful$eruptions > pquant[3] +1.5*iqr.val]
+
+faithful$eruptions[faithful$eruptions < pquant[3] -1.5*iqr.val]
+
+summary(faithful$eruptions)
+```
+
+## 23 : box plot (상자그림)
+```{r}
+par(mfrow=c(1,2))
+
+boxplot(faithful$eruptions,main='Eruptions')
+
+boxplot(faithful$waiting,main='Waiting')
+
+ggplot(faithful) + geom_boxplot(aes(x="", y=waiting))
+```
+
+## 24 : Confidence Interval
+```{r}
+dev.off()
+
+n = 49; sigma=30 ; xbar = 157.02 ; alpha=0.05 ; d=5
+
+qnorm(1-alpha/2) # Z_(0.025)
+
+c.i <- c(xbar - qnorm(1-alpha/2)*sigma/sqrt(n), 
+         xbar + qnorm(1-alpha/2)*sigma/sqrt(n))
+c.i
+```
+
+## 25 : Find P-value
+```{r}
+mu0=1200; sigma=100; n=25; alpha=0.05
+
+xbar=1240; z=(xbar-mu0)/(sigma/sqrt(n))
+
+z
+
+z.alpha=qnorm(0.95)
+
+z.alpha
+
+pval=1-pnorm(z)
+
+pval
+```
+
+## 26 : t-Test (One sample t-Test)
+```{r}
+bulb <- c(2000, 1975, 1900, 2000, 1950, 1850, 1950, 2100, 1975)
+
+mean(bulb)
+
+sd(bulb)
+
+qt(0.95,8) 
+
+t.test(bulb, mu=1950, alternative="greater")
+```
+
+## 27 : t-Test (paired t-Test) 
+```{r}
+A <- c(4.8,4.0,5.8,4.9,5.3,7.4)
+
+B <- c(4.0,4.2,5.2,4.9,5.6,7.1)
+
+t.test(A-B,mu=0)
+```
+
+## 28 : t-Test (Two sample t-Test : equal variance) 
+```{r}
+x_1 <- c(19.54, 14.47, 16.00, 24.83, 26.39, 11.49)
+
+x_2 <- c(15.95,25.89,20.53,15.52,14.18,16.00)
+
+# Pooled standard deviation
+sqrt(((6-1)*var(x_1)+(6-1)*var(x_2))/(6+6-2)) 
+
+# t-test procedure
+t.test(x_1,x_2,var.equal=TRUE,conf.level=0.95) # t-test procedure
+```
+
+## 29 : t-Test (Two sample t-Test : not equal variance) 
+```{r}
+x_1 <- c(12.7,19.3,20.5,10.5,14.0,10.8,16.6,14.0,17.2)
+
+x_2 <- c(18.2,32.9,10.0,14.3,16.2,27.6,15.7)
+
+# t-test procedure
+t.test(x_1,x_2,"less",var.equal=FALSE,conf.level=0.95) 
+```
+
+## 30 
+```{r}
+attach(sleep)
+
+# t-test (paried t-test)
+t.test(extra~group, paired=TRUE)
+
+# var.test procedure
+var.test(extra~group)
+
+# t-test (two sample t-test)
+t.test(extra~group, var.equal=TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+```
+

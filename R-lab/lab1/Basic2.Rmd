@@ -1,0 +1,253 @@
+---
+title: "Basic2"
+author: "Minji Kim"
+date: "7/14/2020"
+output: html_document
+---
+
+
+## 1: 상관계수 검정
+```{r}
+#########################################################
+######################회귀분석/분산분석##################
+#########################################################
+kor <- c(42,38,51,53,40,37,41,29,52,39,45,34,
+         47,35,44,48,47,30,29,34) 
+eng <- c(30,25,34,35,31,29,33,23,36,30,32,29,
+         34,30,28,29,33,24,30,30)
+
+cor(kor,eng)  #  표본상관계수
+
+cor.test(kor,eng)  # 상관분석
+```
+
+```{r}
+## 2: 상관계수 검정(conti.)
+par(cex.lab=2,cex.axis=2)
+plot(kor,eng)
+```
+
+## 3: Car 데이터
+```{r}
+data(cars)
+plot(cars)
+```
+
+```{r}
+## 4: Car 데이터(conti.)
+cor(cars$dist,cars$speed)
+cor.test(cars$dist,cars$speed)
+```
+
+## 5: 회귀계수의 추정
+```{r}
+lm(eng ~ kor)
+lm(eng ~ kor-1)  # 절편 제외
+lm(eng ~ 0 + kor)  # 절편 제외
+```
+
+## 6: 선형회귀분석의 결과(그래프)
+```{r}
+fit1=lm(eng~kor)
+plot(kor,eng)
+abline(fit1,col="blue")
+```
+
+## 7: 선형회귀분석의 결과
+```{r}
+coef(fit1)  # 회귀계수
+fitted(fit1)[1:6]  # fitted values
+round(residuals(fit1)[1:6],2)  # 잔차
+fitted(fit1)[1:6] + residuals(fit1)[1:6]  # must equal to 'eng' 
+eng[1:6]
+```
+
+```{r}
+## 8: 선형회귀분석의 결과(conti.)
+confint(fit1)  # 계수의 신뢰구간
+deviance(fit1)  # 잔차제곱합
+sum((eng-fitted(fit1))^2)  # 잔차제곱합. 위와 동일한 결과.
+```
+
+## 9: 예측
+```{r}
+predict(fit1,newdata=data.frame(kor=37))  # 새로운 데이터로 predict() 할땐 데이터프레임의 형태로 주어야 한다
+coef(fit1)[1] + coef(fit1)[2]*37  # 위의 결과와 동일.
+
+predict(fit1, newdata = data.frame(kor=37), 
+        interval="confidence")  # 신뢰구간
+predict(fit1, newdata = data.frame(kor=37), 
+        interval="prediction")  # 예측구간
+```
+
+## 10: 모형평가
+```{r}
+summary(fit1)
+```
+
+## 11: 회귀 모형 도시하기
+```{r}
+plot(kor,eng)
+sorted.kor=sort(kor,index.return=TRUE)
+s.kor=sorted.kor$x
+s.eng=eng[sorted.kor$ix]
+p<-predict(fit1,interval="confidence")
+s.p<-p[sorted.kor$ix,]
+abline(fit1,col="blue")
+x<-c(s.kor,tail(s.kor,1),rev(s.kor),s.kor[1])
+y<-c(s.p[,"lwr"],tail(s.p[,"upr"],1),
+     rev(s.p[,"upr"]),s.p[,"lwr"][1])
+polygon(x,y,col=rgb(0,1,0,0.25))
+```
+
+
+```{r}
+## 12: 회귀 모형 도시하기(conti.)
+library(ggplot2)
+q<-ggplot(data = data.frame(kor,eng), aes(x = kor, y = eng))
+q
+q + geom_point() + stat_smooth(method="lm")
+```
+
+## 13: 모형평가 차트
+```{r}
+par(mfrow=c(2,2))
+plot(fit1)
+```
+
+## 14: 단순회귀분석과 상관계수
+```{r}
+coef(fit1)[2]
+cor(eng,kor)*sd(eng)/sd(kor)
+cor(eng,kor)^2
+summary(fit1)$r.squared
+```
+
+## 15: Car 데이터 - 모형적합
+```{r}
+m <- lm(dist ~ speed, data=cars)
+summary(m)
+```
+
+## 16: Car 데이터 - 회귀계수 및 잔차
+```{r}
+coef(m)
+fitted(m)[1:6]
+residuals(m)[1:6]
+fitted(m)[1:6] + residuals(m)[1:6]
+cars$dist[1:6]   # 위와 동일한 결과
+```
+
+## 17: Car 데이터 - 선형회귀 그래프
+```{r}
+plot(cars)
+abline(m,col='blue')
+points(cars$speed,fitted(m),col='red',pch=20)
+```
+
+## 18: Car 데이터 - 신뢰구간 및 잔차 제곱합
+```{r}
+confint(m)
+sum(residuals(m)^2)
+```
+
+## 19: Car 데이터 - 예측
+```{r}
+predict(m, newdata=data.frame(speed=3))
+coef(m)[1]+coef(m)[2]*3  # 위와 동일한 결과
+predict(m,newdata=data.frame(speed=3),interval='confidence')  # 신뢰구간
+predict(m,newdata=data.frame(speed=3),interval='prediction')  # 예측구간
+```
+
+```{r}
+## 20: Car 데이터 - 예측 (conti.)
+q <- ggplot(cars, aes(speed,dist))
+q + geom_point() + stat_smooth(method='lm')
+```
+
+## 21: Car 데이터 - 모형평가 차트
+```{r}
+par(mfrow=c(2,2))
+plot(m)
+```
+
+## 22: 범주형 설명변수
+```{r}
+levels(iris$Species)  # Species의 범주들
+iris_lm1 <- lm(Sepal.Width ~ Species, data=iris)
+summary(iris_lm1)
+```
+
+## 23: 일원배치법(반복수가 같은 경우)
+```{r}
+A1 <- c(47,58,51,61,46)
+A2 <- c(51,62,31,46,49) 
+A3 <- c(50,38,47,27,23)
+A4 <- c(22,23,28,42,25)
+A <- c(A1,A2,A3,A4)
+
+group <- as.factor(rep(1:4,each=5))
+fabric <- data.frame(A,group) 
+fabric
+
+A_table <- cbind(A1,A2,A3,A4) 
+A_table
+
+apply(A_table,2,mean)  # 열기준 평균
+mean(A)
+
+aov_fabric<-lm(A ~ group, data=fabric)
+anova(aov_fabric)  # 분산분석표
+```
+
+## 24: 일원배치법(반복수가 일정하지 않은 경우)
+```{r}
+M1 <- c(2,3,4,5)
+M2 <- c(4,5,6,4,3)
+M3 <- c(6,5,7,4,6,8) 
+M <- c(M1,M2,M3)
+
+group_M <- as.factor(rep(1:3,times=c(4,5,6)))
+mean(M1); mean(M2); mean(M3); mean(M)
+
+mechanism<-data.frame(M,group_M)
+aov_mechanism<-lm(M ~ group_M, data=mechanism)
+anova(aov_mechanism)  # 분산분석표
+```
+
+## 25: 상관분석(Anscombe)
+```{r}
+data(anscombe)
+head(anscombe)
+summary(anscombe)
+```
+
+```{r}
+## 26: 상관분석(Anscombe) (conti.)
+cor(anscombe$x1,anscombe$y1)
+cor(anscombe$x2,anscombe$y2)
+cor(anscombe$x3,anscombe$y3)
+cor(anscombe$x4,anscombe$y4)
+```
+
+## 27: 반복이 없는 이원배치법
+```{r}
+pres <- c(79,72,51,58,68,75,66,48,56,
+          65,69,64,44,51,61,65,62,41,45,58) 
+coal <- factor(rep(1:5, 4))
+tar <- factor(rep(1:4,each=5))
+cokes <- data.frame(coal,tar,pres)
+cokes
+anova(lm(pres~coal+tar,data=cokes))
+```
+
+## 28: 반복이 있는 이원배치법
+```{r}
+machine <- factor(rep(1:3,each=6))
+technician <- factor(rep(1:3,3,each=2))
+quality <- c(9,14,14,16,19,22,13,16,18,
+             26,14,18,11,12,11,17,15,16) 
+product <- data.frame(machine,technician,quality) 
+anova(lm(quality ~ machine * technician, data = product))
+```
+
