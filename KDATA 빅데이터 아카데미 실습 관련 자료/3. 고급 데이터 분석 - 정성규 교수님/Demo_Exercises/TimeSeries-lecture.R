@@ -1,20 +1,20 @@
 # time-series plot intro
-kings <- scan("./dataset/timedata/kings.dat",skip=3)
-kingstimeseries <- ts(kings);
+kings <- scan("./dataset/timedata/kings.dat",skip=3) # http:// url 주소를 줘도 된다
+kingstimeseries <- ts(kings); # ts: 순서있는 시계열이다
 plot.ts(kingstimeseries)
 
 souvenir <- scan("./dataset/timedata/fancy.dat")
-souvenirtimeseries <- ts(souvenir, frequency=12, start=c(1987, 1))
+souvenirtimeseries <- ts(souvenir, frequency=12, start=c(1987, 1)) # 매달 관측된 자료 (계정성분 지정방법), 1987년1월부터
 plot.ts(souvenirtimeseries)
 
 # log-transformation
-logsouvenirtimeseries <- log(souvenirtimeseries)
+logsouvenirtimeseries <- log(souvenirtimeseries) # 로그변환하면 분산이 안정화 된다.
 plot.ts(logsouvenirtimeseries)
 
 ## without seasonal component
 # simple moving average
 library(TTR)
-kingstimeseriesSMA3 <- SMA(kingstimeseries, n=3)
+kingstimeseriesSMA3 <- SMA(kingstimeseries, n=3) # Simple Moving Average로최근 3년
 plot.ts(kingstimeseriesSMA3)
 
 kingstimeseriesSMA8 <- SMA(kingstimeseries, n=8)
@@ -42,6 +42,7 @@ rainforecasts
 rainforecasts$fitted
 plot(rainforecasts)
 rainforecasts$SSE
+par(mfrow=c(3,1))
 plot(HoltWinters(rainseries, alpha=0.3, beta=FALSE, gamma=FALSE), main="Alpha=0.3")
 plot(HoltWinters(rainseries, alpha=0.7, beta=FALSE, gamma=FALSE), main="Alpha=0.7")
 plot(HoltWinters(rainseries, alpha=1, beta=FALSE, gamma=FALSE), main="Alpha=1")

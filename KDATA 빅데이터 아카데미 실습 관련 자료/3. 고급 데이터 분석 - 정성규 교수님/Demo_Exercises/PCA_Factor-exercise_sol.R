@@ -20,14 +20,14 @@ correlation_matrix <- cor(crime)
 correlation_matrix
 plot(crime)
 # 대체적으로 변수들 사이에 선형 관계가 있는 것으로 보인다.
-# 즉, 변수에 서로 상관이 있ㄷ고 볼 수 있다.
+# 즉, 변수에 서로 상관이 있다고 볼 수 있다.
 
 #========================================
 # Problem 2. 주어진 데이터에 PCA를 시행하고 스크리 도표를 그려 적절한
 # 주성분의 갯수 m을 찾으시오.
 #========================================
 # do PCA
-pca_fit <- princomp(crime, cor=T)
+pca_fit <- princomp(crime, cor=T) # 측정단위에 대한 민감성제어, 상관행열을 이용하면 일관성 있음
 summary(pca_fit)
 plot(pca_fit, type="lines", main="Scree plot")
 m = 3 # or m = 4
@@ -71,3 +71,4 @@ abline(h=0, lty=2)
 abline(v=0, lty=2)
 text(factorPCA_fit$loadings[,1], factorPCA_fit$loadings[,2], labels = row.names(t(crime)), cex=1, col="blue")
 text(factorPCA_varimax_fit$loadings[,1], factorPCA_varimax_fit$loadings[,2], labels = row.names(t(crime)), cex=1, col="red")
+

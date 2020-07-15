@@ -292,5 +292,58 @@ rule of thumb : Scree Plot을 찍어 무릅을 찾고 바로 앞까지 선택
 
 # 2. 생존분석
 
+위험함수를 추정해 내면, 결국 생존함수를 알 수 있다.
+
+##### Kaplan-Meier Method (누적한계 추정법)
+
+- 생존시간의 분포형태에 대한 사전믿음 불필요함, 
+- 중도절단이 있어도 사용 가능
+
+
+
+
+
 # 3. 시계열분석
 
+> 트렌드를 제거하고 나온 오차가 의미가 있음. 가까운 과거가 더 의미가 있음.
+>
+> 목표는 미래 예측
+>
+> 우선 그림을 그려 형태를 관찰하자
+
+##### 시계열성분(component)
+
+- 성분들로 구성되어서 분해할 수 있다고 믿는다
+  - 불규칙성분(irregular component)
+  - 체계적성분(systematic component) :  추세성분(trend), 계절성분(seasonal), 순환성분(cyclical)
+
+##### 분해법(decomposition method) 
+
+분해해서 각 성분들을 추정하여 원래 시계열을 해석한다
+
+- 가법모형(additive model)과 승법모형(multiplicative model) 있음. 승법 원하면 로그 취해 가법으로 변환
+- `ts(...)` 제너레이트 해서 `decompose(...)` 하면 해결
+
+##### 지수평활법 (exponential smoothing method)
+
+- 40년 역사, 잘 맞지는 않지만 많이 쓴다.
+
+- 먼과거의 가중값을 지수적으로 줄여나가는 방식
+
+- 계산이 쉽다
+- parameters (1~0 사이의 값, 1이면 most recent observation에 몰빵)
+  - alpha : 평균 통제
+  - beta : 추세(기울기) 통제
+  - gamma : 계절성분 통제
+
+###### 1. 단순지수평활법
+
+- beta=F, gamma=F... 가장 잘 설명되는 alpha 추정한다(내가 정해도 된다)
+
+###### 2. 이중지수평활법
+
+- gamma=F... alpha와 beta 추정한다
+
+###### 3. Holt-Winters 지수평활법
+
+- alpha, beta, gamma를 추정함
