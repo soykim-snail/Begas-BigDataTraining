@@ -25,7 +25,8 @@ library(stats)
 fit <- princomp(cereal, cor=T)  # PCA fitting
 summary(fit) 
 
-round(fit$loadings[,],3)
+
+round(fit$loadings[,],3) # 아이겐벡터를 찾는 것
 round(fit$loadings[,1],3)
 round(fit$loadings[,2],3) 
 plot(fit,type="lines")
@@ -36,12 +37,12 @@ round(head(predict(fit, cereal)),3)
 biplot(fit)
 
 # Factor analysis
-require(psych)
-fit1 <- principal(cereal, nfactors=3, rotate="none")
+require(psych) #심리학 자료분석
+fit1 <- principal(cereal, nfactors=3, rotate="none") # 주성분분석, 인자갯수는 정해줘야 함 (주성분분석한 결과에서 참고해도 됨.)
 fit1$loadings
 
 # VARIMAX 인자회전
-fit2 <- principal(cereal, nfactors=3, rotate="varimax")
+fit2 <- principal(cereal, nfactors=3, rotate="varimax") # 0에 가까와 뚤린 값이 많아져라
 fit2$loadings
 
 # 회전전후 비교
