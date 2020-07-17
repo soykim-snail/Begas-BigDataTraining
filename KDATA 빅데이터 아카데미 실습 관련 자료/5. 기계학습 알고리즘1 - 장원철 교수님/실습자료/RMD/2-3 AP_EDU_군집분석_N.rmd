@@ -39,7 +39,8 @@ options(repr.plot.width = 5, repr.plot.height = 4) #그림 크기 옵션
 
 **[데이터 호출]** 용산구 데이터
 ```{r data import : Real Estate Data}
-path                  <- "C:/R_project/DAT/3.아파트_주소기반_주택지역특성시세정보_DB.xlsx"
+# path                  <- "C:/R_project/DAT/3.아파트_주소기반_주택지역특성시세정보_DB.xlsx"
+path <- "C:/Users/BasicSTAT00/Downloads/3.아파트_주소기반_주택지역특성시세정보_DB.xlsx"
 sheet.names           <- excel_sheets(path)
 
 df1                   <- read_excel(path, sheet.names[1])
@@ -84,7 +85,7 @@ D2
 
 **[계층적 군집 분석]** 최단 연결법
 ```{r hierarchical clustering : single link}
-hc1                   <- hclust(dist(x)^2, method = "single")
+hc1                   <- hclust(dist(x)^2, method = "single") # distance's square... no special rational..
 plot(hc1, labels = EMD, hang = 1, main = "dendrogram : 최단 연결법")
 ```
 <br /> 
@@ -97,6 +98,14 @@ plot(hc2, labels = EMD, hang=1, main = "dendrogram : 최장 연결법")
 ```
 <br /> 
 <br /> 
+
+```{r}
+hc3 <- hclust(dist(x, method = "manhattan")^2, method = "centroid")
+plot(hc3, labels = EMD, hang=1, main="중심연결법, manhattan 거리")
+```
+
+
+
 
 **[군집 설정 및 시각화]** 군집 수 설정 후 그룹 별 산점도로 결과 확인 : 최단 연결법 
 ```{r plot : single link}
@@ -146,7 +155,7 @@ text(x, labels = EMD, adj = -0.1, cex = 0.8)
 <br /> 
 
 
-<span style="color:blue"> **SOM(Self-Organization-Map)** </span>
+<span style="color:blue"> **SOM(Self-Organizing-Map)** </span>
 <br />
 <br />
 
@@ -189,7 +198,7 @@ summary(apart.som)
 
 **[시각화]**
 ```{r som plot(basic)}
-plot(apart.som, main="Apartment data")
+plot(apart.som, main="Apartment data") # 배분된 최종 가중치가 아래 범례로 나온다
 ```
 <br /> 
 <br /> 
