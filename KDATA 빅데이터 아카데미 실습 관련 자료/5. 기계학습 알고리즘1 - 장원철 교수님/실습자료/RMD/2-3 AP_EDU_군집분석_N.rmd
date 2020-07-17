@@ -186,7 +186,7 @@ som에 활용할 grid는 somgrid함수 활용
   + topo       : 각 노드들이 연결되는 방식
 ```{r SOM}
 set.seed(7)
-apart.som             <- som(apart.sc, grid = somgrid(13, 13, topo = "hexagonal"))
+apart.som             <- som(apart.sc, grid = somgrid(3, 3, topo = "hexagonal"))
 ```
 <br /> 
 
