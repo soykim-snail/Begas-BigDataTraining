@@ -69,7 +69,7 @@ options(repr.plot.width = 6, repr.plot.height = 5)
 
 **[데이터 호출]** 
 ```{r data import}
-path                  <- "C:/R_project/DAT/3.아파트_주소기반_주택지역특성시세정보_DB.xlsx"
+# path                  <- "C:/R_project/DAT/3.아파트_주소기반_주택지역특성시세정보_DB.xlsx"
 sheet.names           <- excel_sheets(path)
 
 df1                   <- read_excel(path, sheet.names[1])
@@ -80,7 +80,8 @@ data                  <- Reduce(function(x, y) merge(x, y, all=FALSE), list(df1,
 
 data$LAND_ACCESS      <- as.numeric(as.character(data$LAND_ACCESS))      
 data1                 <- data[complete.cases(data), c(97, 41, 93, 49:53, 25:27)]
-head(data1, 5)
+# head(data1, 5)
+knitr::kable(head(data1,5), caption = "아파트 시세정보")
 ```
 * AVM_RECOVER : 회수가능금액
 * LAND_ACCESS : 개별공시지가
@@ -96,7 +97,7 @@ head(data1, 5)
 <br /> 
 <br />
 
-```{r correlation plot}
+```{r, fig.cap= "correlation plot"}
 pairs(data1, lower.panel = panel.cor, upper.panel = upper.panel)
 ```
 <br /> 
@@ -210,7 +211,7 @@ x                     <- data1[, -1]
 **[모형적합]** 기본모형
 ```{r ridge regression}
 set.seed(1)
-ridge.fit             <- glmnet(as.matrix(x), y, alpha = 0) # alpha=0: ridge, 1: lasso
+ridge.fit             <- glmnet(as.matrix(x), y, alpha = 0) # alpha=0: ridge, 1: lasso, 0.5: Elastic
 ```
 <br />
 
