@@ -77,7 +77,7 @@ dfbetas(infludata.lm)
 dfbetaPlots(infludata.lm)
 
 # Boston dataset
-insatll.packages("MASS")
+install.packages("MASS")
 library(MASS)
 data(Boston)
 str(Boston)

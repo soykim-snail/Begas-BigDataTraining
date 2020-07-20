@@ -46,3 +46,9 @@ Goal : being fluent in using R studio
 
 - 박스 플롯
   - `boxplot(<데이터들>)` 또는 `boxplot(<value>~<구분>, data)`
+
+
+
+## 서울대학교 통계학과 교수팀 강의
+
+2020-7 2주
