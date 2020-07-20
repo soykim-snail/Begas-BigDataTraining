@@ -210,3 +210,59 @@ item 간의 if-then 관계를 찾는 방법
 
 - Elasticnet
 
+
+
+---
+
+강사: 원중호 교수
+
+날짜: 2020-07-20
+
+## 의사결정 나무(Decision Tree)
+
+지도학습이다. 
+
+분류 및 예측에 사용됨
+
+if-then 규칙을 도출한다
+
+좋은 해석력 (예측력이 좋다는 것은 아님.)
+
+
+
+변수가 범주형자료이면, 절단기준을 데이터를 보고 정해야 함.
+
+구성요소 : 
+
+- root node, 
+- internal node, 
+- terminal node (=잎사귀, leaf node), 
+- depth : 뿌리마디로부터 끝 마디까지 마디수
+
+분석단계
+
+- 형성 (growing)
+  - 최적의 분리규칙(split rule)을 찾아서 나무를 성장 시키는 단계
+  - 분리기준(split criterion), 정지규칙(stopping rule)을 지정해야 함.
+  - p차원의 공간을 가능한 동질적인 공간으로 분할하는 과정임
+  - 불순도 측도(impurity)
+    - 지니 지수
+    - 엔트로피 지수
+- 가지치기 (prunning)
+  - overfitting을 줄이고, 일반화 성능을 높이기 위해 가지치기
+- 타당성평가
+  - 여러방법
+  - validation data로 검정
+
+
+
+### 앙상블
+
+- Bagging (bootstrap aggregating)
+- Random Forest
+- Boosting
+
+### Support Vector Machine
+
+### kNN (K-nearest neighbors)
+
