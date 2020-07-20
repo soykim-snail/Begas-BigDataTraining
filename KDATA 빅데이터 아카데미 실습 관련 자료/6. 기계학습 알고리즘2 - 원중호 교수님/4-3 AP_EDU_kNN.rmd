@@ -1,0 +1,172 @@
+---
+title: "▒ KNN ▒"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<br /> 
+
+### **0. 환경설정**
+<br />
+
+```{r set env, echo = TRUE, message = FALSE}
+#required_pkg         <- c("class", "readxl")
+#pkg_to_install       <- required_pkg[!(required_pkg %in% rownames(installed.packages()))]
+#if(length(pkg_to_install) > 0) install.packages(pkg_to_install)
+
+library(class)
+library(readxl)
+```
+<br /> 
+
+
+### **1. 데이터 불러오기**
+<br />
+
+**[데이터 다운로드]** <br />
+
+* C드라이브에 [R_project] 폴더 생성<br />
+* [R_project] 폴더에 [DAT] 폴더 생성<br />
+* 데이터 스토어에서 샘플데이터(3.아파트_주소기반_주택지역특성시세정보_DB.xlsx)를 "C:/R_project/DAT/"에 다운로드  (<https://www.datastore.or.kr/file/detail?id=2c0a9616-4d78-403c-9d77-3db2effb2a74&page=1&viewCount=10&sort=1&order=1&source=1&keyword=%EC%95%84%ED%8C%8C%ED%8A%B8>)<br />
+* 서울/수도권 및 5대광역시 아파트에 대한 주소테이블 외 4개의 테이블(정보집단)로 구성되며 각각 주택특성정보, 지역특성정보, 가격/신뢰등급/예상회수율정보 테이블로 이루어져 있고, 각 테이블간은 고유키값(NUM)으로 연계되어 있음 
+<br />
+<br />
+
+**[데이터 호출]** 
+```{r data import}
+path                  <- "data/3.아파트_주소기반_주택지역특성시세정보_DB.xlsx"
+sheet.names           <- excel_sheets(path)
+
+df1                   <- read_excel(path, sheet.names[1])
+df2                   <- read_excel(path, sheet.names[2])
+df3                   <- read_excel(path, sheet.names[3])
+df4                   <- read_excel(path, sheet.names[4])
+data                  <- Reduce(function(x, y) merge(x, y, all=FALSE), list(df1, df2, df3, df4))
+
+data$LAND_ACCESS      <- as.numeric(as.character(data$LAND_ACCESS)) 
+data$UNIT_NUM         <- as.numeric(as.character(data$UNIT_NUM)) 
+
+data                  <- data[complete.cases(data), c("SGG","PRICE_GEN", "FLOOR", "PRIV_AREA", "PUB_AREA", "SUM_AREA","UNIT_NUM", "PARK_NUM", "LAND_ACCESS", "SUB_DIST")]   
+
+head(data, 5)
+```
+
+* SGG : 시군구
+* PRICE_GEN ; 일반거래시세
+* FLOOR : 층명
+* PRIV_AREA : 전유면적
+* PUB_AREA : 공유면적
+* SUM_AREA : 계약 면적
+* UNIT_NUM : 총세대수
+* PARK_NUM : 총주차대수
+* LAND_ACCESS : 개별공시지가
+* SUB_DIST : 지하철역과의 거리
+<br />
+<br />
+ 
+**[데이터 가공]** 데이터가 적은 지역 전처리 (광진구 제거, 종로구와 중구 통합)  
+```{r preprocessing loaded dataset}
+
+knn_data               <- subset(data,!grepl("광진구", SGG))
+knn_data$SGG           <- ifelse(knn_data$SGG == "성동구", "A",ifelse(knn_data$SGG == "용산구", "B", "C"))
+table(knn_data$SGG)
+
+# column type 지정
+knn_data$SGG           <- as.factor(as.character(knn_data$SGG))
+
+head(knn_data)
+```
+<br />
+
+**[데이터 분할]**
+```{r data split}
+set.seed(10)
+sample_num            <- sample(1:nrow(knn_data), 0.7*nrow(knn_data))
+train_df              <- knn_data[sample_num,]
+test_df               <- knn_data[-sample_num,]
+x_train               <- subset(train_df, select = setdiff(names(knn_data), "SGG"))
+x_test                <- subset(test_df,  select = setdiff(names(knn_data), "SGG"))
+y_train               <- train_df$SGG
+y_test                <- test_df$SGG
+```
+<br /> 
+
+### **2. KNN**
+<br />
+
+<span style = "color:blue"> **(Q) 주택 특성과 시세 정보를 활용하여 지역을 잘 분류할 수 있을까?** </span><br />
+<br />
+
+**[저장공간 생성]** 모형 정확도 저장 공간
+```{r set null vector}
+k.grid                <- seq(1 ,21, 2) 
+acc_df                <- data.frame(k = k.grid, acc = NA)
+```
+<br />
+
+
+**[정확도 계산]** k에 따른 모형 정확도 계산 loop 
+```{r loop}
+for(i in 1:nrow(acc_df)){ # loop start
+  # k에 따른 모형 적합
+  knn_model           <- knn.cv(x_train, k = i, cl = y_train)
+  # k에 대한 정확도 계산
+  acc_df[i, "acc"]    <- mean(knn_model == y_train)
+} 
+```
+<br />
+
+**[시각화]** k에 대한 모형 정확도 plot
+```{r acc plot}
+plot(acc_df, type = "b")
+```
+<br />
+
+**[k 결정]** 가장 높은 모형 정확도를 가진 k 확인
+```{r find optimal}
+optimal.k             <- acc_df[which.max(acc_df$acc), "k"]
+print(optimal.k)
+```
+<br />
+
+**[모형 적합]** optimal k를 통한 모형 Test
+```{r KNN by optimal k}
+knn_model             <- knn(train = x_train, test = x_test, cl = y_train, k = optimal.k)
+```
+<br />
+
+**[결과]** Test Confusion Matrix
+```{r Confusion Matrix}
+table(knn_model, y_test)
+```
+<br />
+
+**[결과]** Test 정확도 계산
+```{r accuracy}
+cat("분류 정확도 = ", mean(knn_model == y_test)*100, "%")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
