@@ -96,6 +96,7 @@ head(tree_data)
 ```{r}
 set.seed(10)
 sample.num            <- sample(1:nrow(tree_data), 0.7*nrow(tree_data))
+# sample.num
 train                 <- tree_data[sample.num,]
 test                  <- tree_data[-sample.num,]
 

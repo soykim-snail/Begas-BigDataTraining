@@ -100,6 +100,7 @@ nrow(test_df)
 **[모형적합]** 기본적인 분석
 ```{r fit svm linear}
 fit.svm.linear        <- svm(SGG~., data=train_df, kernel = "linear")  # svm 모형 생성
+# kernel : linear, polynomial, radial basis, sigmoid
 fit.svm.linear  # 모형 결과 출력
 summary(fit.svm.linear)
 ```
@@ -119,6 +120,7 @@ plot(fit.svm.linear, train_df, PRICE_GEN ~ UNIT_NUM)
 <br />
 
 **[모형적합]** 모형 Tuning: 최적의  gamma parameter 추정
+그리드 서치 방법을 사용하였음. (즉, gamma와 cost를 15개씩 후보를 주어 모두 계산함)
 ```{r model tune : linear}
 obj.linear            <- tune.svm(SGG~., data=train_df, kernel="linear", gamma=2^(-7:7), cost=2^(-7:7))  # 선형 svm tuning
 obj.linear$best.model  # tuning 한 best model 출력
