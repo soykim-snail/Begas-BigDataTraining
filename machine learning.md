@@ -347,3 +347,104 @@ margin의 정의 = 선과 샘플 사이의 거리의 최소값
 - 가정에 결함 있음
 - 범주형 변수에만 사용 가능
 - 추정된 확률을 신뢰할 수 없음
+
+---
+
+## 딥러닝 개요
+
+강사: 베가스 컨설팅 김윤응 팀장
+
+강의일: 2020-07-21
+
+---
+
+- activation functions
+
+![Complete Guide of Activation Functions | by Pawan Jain | Towards ...](https://miro.medium.com/max/1192/1*4ZEDRpFuCIpUjNgjDdT2Lg.png)
+
+(참고!) logistic 함수와 Sigmoid 함수는 정확히 같은 것의 다른 이름
+
+$$\frac{e^x} {e^x + 1} = \frac{1} {1+e^{-x}}$$ 
+
+
+
+## 딥러닝 알고리즘
+
+강사: 베가스 대표 김도현
+
+강의일: 2020-07-22
+
+딥러닝 vs. shallow learning (노드 수 많게)
+
+사전학습으로 활용한다.
+
+**학습의 일반적인 방법**
+
+학습은 최소화하고자 하는 loss 함수를 정의한 후,
+
+gradient descent 기법을 이용해서 문제를 해결하는 것
+$$
+\theta_1 = \theta_0 -\eta*\Delta(\theta_0)
+$$
+
+- $\Delta(\theta_0)$  : 미분? 고민할게 없다. 수학자가 한다.
+
+- $\eta$ : 학습률? 함께 고민한다. 
+  - 기울기가 크면 최저에 멀듯 하니 크게, 기울기가 0에 가까우면 최저가 가까울 듯 하니 작게 ... 식으로 하는게 상식에 부합
+
+- $\theta_0$ : 출발점? Restricted Boltzman, AutoEncoder 방법 등을 적용하니 잘 작동하더라.
+
+sigmoid 함수 사용으로 발생한 문제들을 해결
+
+- 미분값이 작아짐(vinishing gradient problem) : 방향만 쓰고 값은 버리자 (rectified linear unit, ReLU)
+
+#### 최적화 기법들
+
+##### 훈련자료수 조절
+
+- stochastic gradient descent (SGD, 하나씩 학습)
+- batch gradient descent (BGD, 통으로 학습)
+- mini-batch gradient descent (MBGD, 쪼개서 학습)
+
+##### 학습률 변형
+
+- momentum : 기존 진행 방향을 기억해서 일부 반영하자.
+  - 가속되는 경향이 문제
+- AdaGrad : 학습률은 조금 둔화시키고, 변화의 폭은 반영해 준다. 
+  - 미분값이 클때는 스텝이 큰 게 문제
+- RMSProp : AdaGrad의 가중평균
+- ADAM : momentum과 RMSProp의 혼합형
+
+### Restrictied Boltzmann Machine
+
+비지도학습 모델
+
+차원축소, 분류, 선회회귀, feature learning, collaborative filtering, topic modeling.. 등 다양하게 사용된다.
+
+비선형에서의 주성분분석에 해당한다.
+
+확률적 모형
+
+### Autoencoder
+
+차원축소, 노이즈제거
+
+RBM과 유사하지만 결정적 모형
+
+### Convolution Neural Network
+
+- convolution 연산을 사용하는 신경망
+- convolution? 
+  - 값에 필터를 곱하는 것
+
+### Recurrent Neural Network
+
+- 전 까지의 값이 다음에 영향을 준다면, 나는 어떻게 모델링을 하면 좋을까?
+- 시간의 흐름을 갖는 sequence 데이터를 다룬다. (음성, 동영상, 주식 시세 ... 등)
+
+### Long Short Term Memory
+
+### Generative Adversarial Network
+
+### eXplainable Artificial Intelligence
+
