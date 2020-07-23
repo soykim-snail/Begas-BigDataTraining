@@ -444,7 +444,46 @@ RBM과 유사하지만 결정적 모형
 
 ### Long Short Term Memory
 
+---
+
 ### Generative Adversarial Network
 
+그림을 생성하는자와 평가하는 자가 대립하여 서로의 성능을 점차 개선해가는 비지도학습 신경망모델
+
+generative model : 데이터 분포를 학습하고 이로부터 새로운 데이터를 생성
+
 ### eXplainable Artificial Intelligence
+
+- AOT (and or template)
+
+- LIME
+
+  - 번수들을 범주화 한후 (연속형, 텍스트, 이미지 ... 모두 적절히 segmentation)
+  - 일단 랜덤샘플링하고
+  - 가까운 점에 가중치를 많이주는 방법으로 모델링
+
+- Shapley Value :  수요예측, 가격예측한 후에 해석하기에 적절함
+
+  - 설명이 직관적이고 이해하기 쉽다. 
+
+  - 확률을 몬테카를로 기법으로 추정하는 방법을 썼다.
+
+  - 게임이론으로 경제학자가 만들었음.
+
+    
+
+### Reinforcement Learning
+
+Markov decision process(MDP) 상황에 한정하여 해결함.
+
+*Markov property(마코프 확률과정): 기억하지 않는 확률과정*
+
+MDP 구성요소
+
+- S : 상태, 
+- A : 행동, 
+- R : 보상,
+- $P^a_{ss`}$ :상태변환확률, 
+- $\gamma$ : 할인률
+- $\pi$ : 정책
 
