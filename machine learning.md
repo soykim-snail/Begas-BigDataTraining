@@ -478,12 +478,19 @@ Markov decision process(MDP) 상황에 한정하여 해결함.
 
 *Markov property(마코프 확률과정): 기억하지 않는 확률과정*
 
-MDP 구성요소
+##### MDP 구성요소
 
-- S : 상태, 
-- A : 행동, 
-- R : 보상,
-- $P^a_{ss`}$ :상태변환확률, 
-- $\gamma$ : 할인률
-- $\pi$ : 정책
+- S : 상태 (state)
+- A : 행동 (action)
+- R : 보상 (reward)
+- $P^a_{ss`}$ :상태변환확률 (state transition probability)
+- $\gamma$ : 할인률 (discount factor)
+- $\pi$ : 정책 (policy)
 
+6개 구성요소를 정의할 수 있으면 문제를 풀 수 있다.
+
+푼다는 것은 보상의 현재가치의 최대화하는 해를 구하는 것
+
+##### Multi-armed Bandit
+
+신약개발, 넷플릭스 영화 추천 등에 사용됨
