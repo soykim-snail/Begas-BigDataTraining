@@ -491,6 +491,74 @@ Markov decision process(MDP) 상황에 한정하여 해결함.
 
 푼다는 것은 보상의 현재가치의 최대화하는 해를 구하는 것
 
-##### Multi-armed Bandit
+
+
+#### Multi-armed Bandit
 
 신약개발, 넷플릭스 영화 추천 등에 사용됨
+
+
+
+##### 문제상황 
+
+- k개의 슬롯머신이 있고, 각 머신은 다른 보상을 제공한다. 
+
+- T번 만큼 당길  수 있다.
+
+- 한번에 하나만 당길 수 있다.
+
+- 목표는, 정해진 시간 내에 총 보상을 최대화
+
+  (!!정리하면) 상태변환확률을 알면 문제가 해결되는 상황 (확률이 높은 곳에 몰빵)이지만, 모르니까 추정해야 함!
+
+##### 문제풀이 2 방법
+
+1. Bayesian : 확률이 특정 분포를 따른다고 가정 후 추정
+
+   - 사전분포를 가정한 후
+
+     - $$\mu^{i.i.d.}_a ~~~~  Beta(\alpha, \beta)$$
+
+   - 게임이 진행되면서 사후분포를 조정한다
+
+     - $$\mu_a|X ~~~~ Beta(.....)$$
+
+     - 실험결과로 사후분포를 계산한다. 
+
+   - 목표는 : $$argmax_{(A_t)} E{\mu-\pi}[\Sigma^T_{t=1}X_t]$$
+
+2. Frequentist  : 빈도 기반의 확률 추정
+
+   - exploration의 exploitation 방법이라고 한다. 
+   - 우선 exploration 단계를 거친다.
+   - 신뢰구간을 계산한다.
+
+   - 신뢰구간의 상한(Upper Confidence Bound)이 가장 높은 정책을 고른다.
+
+
+
+#### Grid World 예제
+
+순차게임, MDP 문제임
+
+상태변환확률을 알아야 함.
+
+실제 세상에서는 상태변환확률을 추정하기 어렵다는 것이 난관임.
+
+- return : 보상의 현재가치
+- value function : 주어진 state와 policy에서 기대되는 return
+- Q function : 주어진 state와 policy에서  action에 따라 기대되는 return
+
+##### 동적계획법 알고리즘
+
+- 큰 문제를 여러 개의 하위 문제로 나누어 푼 다음, 그것을 결합하여 최종적인 목적에 도달
+
+
+
+SARSA와 Q-learning
+
+
+
+deep learning 방법을 이용하면,
+
+deep SARSA, deep Q-learning
