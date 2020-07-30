@@ -126,7 +126,7 @@ https://www.kaggle.com/zalando-research/fashionmnist
 
 - ##### 자기조직화 지도(Self-Organizing Map)
 
-- ![img](https://upload.wikimedia.org/wikipedia/commons/7/70/Synapse_Self-Organizing_Map.png)
+- ![img](http://i.imgur.com/ZsAdHxT.png)
 
   - 입력층(input layer)과 경쟁층(competitive layer)
   - input들은 학습을 통해 경쟁층에 매핑됨 (지도, map) : 
