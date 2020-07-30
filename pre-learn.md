@@ -2,6 +2,8 @@
 
 Goal : being fluent in using R studio
 
+[YouTube 강좌](https://www.youtube.com/watch?v=dR8vopZEzkk&list=PLdWOeFZS0Yp8az2A6Z7cNpOmt6IjaHzyA)
+
 ## Data Structure
 
 * Matrix :  2 dimensional data structure with elements of **identical type.** 
